@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+	xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
+	id="WebApp_ID" version="4.0">
+	<display-name>restApiWithJava</display-name>
+	<welcome-file-list>
+		<welcome-file>index.html</welcome-file>
+	</welcome-file-list>
+			
+			
+			<!-- Basic class as part of your servlet package -->
+	<servlet>
+		<servlet-name>JerseyServlet</servlet-name>
+		<servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class><!--Tells Tomcat:Use Jersey to handle REST APIs-->
+					
+		<!-- Package scanning --><!--Tells Jersey where your REST controllers are-->
+		<init-param>
+			<param-name>jersey.config.server.provider.packages</param-name>
+			<param-value>in.nic.controller</param-value>
+		</init-param>
+
+		<load-on-startup>1</load-on-startup>		<!-- Always 1 --><!--Forces servlet to load when server starts-->
+	</servlet>
+ 
+	<servlet-mapping>								<!-- map servlet to a URL pattern -->
+		<servlet-name>JerseyServlet</servlet-name>
+		<url-pattern>/api/*</url-pattern>
+	</servlet-mapping>
+	
+	
+
+</web-app>

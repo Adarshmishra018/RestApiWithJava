@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+
+
+<style>
+    body {
+        background: #f4f6f8;
+    }
+    .profile-card {
+        max-width: 400px;
+        margin: 100px auto;
+        padding: 30px;
+        border-radius: 10px;
+        background: white;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+	.hidden {
+	    display: none;
+	}
+</style>
+
+</head>
+<body>
+	<div class="profile-card">
+	    <h3>Welcome</h3>
+
+	    <!-- VIEW MODE -->
+	    <div id="viewSection">
+	        <p><b>Name:</b> <span id="username"></span></p>
+	        <p><b>Email:</b> <span id="email"></span></p>
+	        <p><b>Mobile:</b> <span id="mobile"></span></p>
+	        <p><b>User ID:</b> <span id="userid"></span></p>
+
+	        <button id="editBtn">Update Profile</button>
+	    </div>
+
+	    <!-- EDIT MODE -->
+	    <div id="editSection" class="hidden">
+	        <input type="text" id="editName" placeholder="Name"><br><br>
+	        <input type="email" id="editEmail" placeholder="Email"><br><br>
+	        <input type="text" id="editMobile" placeholder="Mobile"><br><br>
+
+	        <button id="submitBtn">Submit</button>
+	        <button id="cancelBtn">Cancel</button>
+	    </div>
+
+	    <br>
+	    <button onclick="logout()">Logout</button>
+	</div>
+
+	
+	<!--<div class="profile-card">
+		    <h3>Welcome 👋</h3>
+
+			 Display section 
+			<p><b>Name:</b> <span id="username"></span></p>
+			<p><b>Email:</b> <span id="email"></span></p>
+			<p><b>Mobile:</b> <span id="mobile"></span></p>
+			<p><b>User ID:</b> <span id="userid"></span></p>
+
+			
+			<button onclick="showUpdateForm()">Update Profile</button>
+			
+		<button id="logoutBtn" onclick="logout()" class="btn btn-danger mt-3">   Logout  </button>
+		
+		<form id="updateForm" class="hidden">
+		        <h4>Update Details</h4>
+
+		        <input type="text" id="u_username" placeholder="Username" required>
+		        <input type="email" id="u_email" placeholder="Email" required>
+		        <input type="text" id="u_mobile" placeholder="Mobile" required>
+
+		        <button type="submit">Save Changes</button>
+		    </form>
+	
+	
+	</div>-->
+	
+	
+	<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+	<script src="profile.js"></script>
+	
+	
+</body>
+</html>

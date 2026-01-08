@@ -57,7 +57,7 @@ public class AuthController {			// that handles OAuth login redirect & OAuth cal
     	logger.debug("Code & state recieved");
     	logger.debug("Returned code:"+code);
     	logger.debug("Returned state:"+state);
-        TokenResponse token =ParichayOAuthClient.getToken(code, codeVerifier);
+        TokenReponse token =ParichayOAuthClient.getToken(code, codeVerifier);
 
         return Response.ok(token).build();
     

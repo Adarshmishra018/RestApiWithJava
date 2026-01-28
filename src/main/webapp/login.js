@@ -12,7 +12,7 @@ $(document).ready(function() {      // Waits until HTML is fully loaded
 		//const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
 
 		// Basic validation
-		if (!email ) {		//|| !password
+		if (!email) {		//|| !password
 			alert("Email and password are required", "danger");
 			return;
 		}
@@ -31,92 +31,50 @@ $(document).ready(function() {      // Waits until HTML is fully loaded
 		}*/
 
 		// Data to send to backend
-		let loginData = {
+		let loginData = {			//set email & passsword to loginData 
 			email: email,
 			password: password
 		};
 
-		$.ajax({                     // Start AJAX request (Client → Server)
-			url: "http://oauthclient.staging.nic.in/v1/api/login/user", // Login API
-			type: "POST",
-			//contentType: "application/x-www-form-urlencoded"
-			// contentType: "application/json",               // Sending JSON
-			//data: JSON.stringify(loginData),               // Convert JS → JSON
-			data: loginData,
-
-			success: function(resp) {   // Runs if server return 200
-				console.log("response :", resp);
-	
-				// Show message returned by server
-				showMessage(resp.msg, resp.status);
-			// redirect on successful login
-				if (resp.status == "success") {
-					 sessionStorage.setItem("userData", JSON.stringify(resp.data));
-					 window.location.href = "profile.html";
-					 console.log("response :", resp);
-					 debugger;
-				}
-			},
-
-			error: function(xhr) {     // Runs if server returns error
-			//	showMessage(xhr.responseText || "Login failed", "danger");
-				let message = "Login failed";
-
-				if (xhr.responseJSON && xhr.responseJSON.msg) {
-					message = xhr.responseJSON.msg;   // "Invalid password"
-				}
-
-				showMessage(message, "danger");
-
-				// Reset form
-				$("#loginForm")[0].reset();
-			}
+				$.ajax({                     // Start AJAX request (Client → Server)
+					url: "http://oauthclient.staging.nic.in/api/login/user", // Login API
+					type: "POST",
+					data: loginData,								//sends data with APi call
 		
-		});
-});
-	
-	
-	
-	
-	$("#parichayLoginBtn").on("click", function () {
-            // Redirect to backend OAuth start endpoint
-            console.log("response :");
-           window.location.href = "http://oauthclient.staging.nic.in/v1/api/login1/loginOAuth";
-        });
-        
-       // $("#parichayLoginBtn").on("click", function () {
-			/* const params = new URLSearchParams({
-	        client_id: "oauthcliente4l1qijq8cmwsob27gpqf",
-	        redirect_uri: "http://oauthclient.staging.nic.in/v1/api/login1/callback",
-	        scope: "user_details",
-	        state: crypto.randomUUID(),
-	        code_challenge_method: "S256",
-	        code_challenge: "bWosNXhfXulSnB4dQCsbRi1xxv4VUen1zOgciqzIXj4",
-	        response_type: "code"
-	    });
+					success: function(resp) {   // Runs if server return 200
+						console.log("response :", resp);
+						const userData = resp.data;
+						console.log("response data 1111 :", userData);
+						
+						// Show response
+						showMessage(resp.msg, resp.status);
+						// redirect on successful login
+						sessionStorage.setItem("userData", JSON.stringify(resp.data));//Store userData in Sesssion
+						window.location.href = "profile.html";
+						console.log("response :", resp);
+					},
+		
+					error: function(xhr) {     // Runs if server returns error
+						let message = "Login failed";
+		
+						if (xhr.responseJSON && xhr.responseJSON.msg) {
+							message = xhr.responseJSON.msg;   // "Invalid password"
+						}
+		
+						showMessage(message, "danger");
+		
+						// Reset form
+						$("#loginForm")[0].reset();
+					}
+		
+				});
+	});
 
-	    const url = "http://oauthclient.staging.nic.in/v1/api/login1/v1/oauth2/authorize?" + params.toString();
-*/
-	    // 🔁 Redirect browser
-	  //  window.location.href = url;
-   /* $.ajax({
-        url: "http://oauthclient.staging.nic.in/v1/api/login1/loginOAuth",
-        type: "GET",
-        success: function (res) {
-			console.info(res);
-            window.open(res.authUrl, "_blank"); // new tab
-        }
-    });*/
-/*        $("#parichayLoginBtn").on("click", function () {
-    $.ajax({
-        url: "http://oauthclient.staging.nic.in/v1/api/login1/loginOAuth",
-        type: "GET",
-        success: function (res) {
-            window.open(res.authUrl, "_blank"); // new tab
-        }
-    });*/
-
-//});
+			$("#parichayLoginBtn").on("click", function() {
+				// Redirect to backend OAuth start endpoint
+				console.log("response :");
+				window.location.href = "http://oauthclient.staging.nic.in/api/login1/loginOAuth";
+			});
 
 
 });
@@ -129,4 +87,3 @@ function showMessage(msg, type) {
 		.text(msg);
 }
 
- 

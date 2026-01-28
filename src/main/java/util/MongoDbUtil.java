@@ -9,8 +9,6 @@ import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
-import in.nic.controller.LoginController;
-
 public class MongoDbUtil {
 
 	private static final Logger logger = LogManager.getLogger(MongoDbUtil.class);
@@ -22,6 +20,7 @@ public class MongoDbUtil {
 		return database.getCollection("user"); //returns the collection named user
 		
 	}
+	
 	public static void close() {
         if (mongoClient != null) {
             mongoClient.close();

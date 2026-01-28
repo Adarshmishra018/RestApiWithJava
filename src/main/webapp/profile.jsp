@@ -32,7 +32,7 @@ System.out.println(" print value of user Details which is come from call back ur
 </head>
 <body>
     <div class="profile-card">
-        <h3>Welcome</h3>
+        <h3>Welcome👋 <%= (user != null ? user.getFirstName() : "") %></h3> 
 
         <div id="viewSection">
             <p><b>Parichay ID:</b> <span id="parichayId"><%= user != null ? user.getParichayId() : "" %></span></p>
@@ -43,7 +43,7 @@ System.out.println(" print value of user Details which is come from call back ur
             <p><b>Mobile:</b> <span id="mobile"><%= user != null ? user.getMobile() : "" %></span></p>
             <p><b>Email:</b> <span id="email"><%= user != null ? user.getEmailId() : "" %></span></p>
 
-            <button id="editBtn">Update Profile</button>
+           <%--  <button id="editBtn">Update Profile</button>
         </div>
 
         <div id="editSection" class="hidden">
@@ -54,7 +54,7 @@ System.out.println(" print value of user Details which is come from call back ur
             <button id="submitBtn">Submit</button>
             <button id="cancelBtn">Cancel</button>
         </div>
-
+ --%>
         <br>
         <button onclick="logoutP()">Logout</button>
          <br>
@@ -63,12 +63,8 @@ System.out.println(" print value of user Details which is come from call back ur
  		<button id="refreshTokenBtn">Refresh Token</button>
     </div>
     
-   
-
-
-
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="profile.js"></script>
+	<script src="callback.js"></script>
 
 </body>
 </html>

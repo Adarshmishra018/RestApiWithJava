@@ -10,7 +10,7 @@ document.getElementById("forgotForm").addEventListener("submit", function (e) {
         return;
     }
 
-    fetch("/v1/api/login/reset", {
+    fetch("/api/login/reset", {
         method: "POST",
         body: new FormData(form)
     })

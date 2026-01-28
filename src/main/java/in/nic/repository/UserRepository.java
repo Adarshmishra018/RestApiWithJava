@@ -3,7 +3,7 @@ package in.nic.repository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bson.Document;
-import org.bson.types.ObjectId;
+
 
 import com.mongodb.MongoException;
 import com.mongodb.client.MongoCollection;
@@ -16,10 +16,6 @@ import in.nic.model.UserModel;
 import util.MongoDbUtil;
 import util.ObjectIdUtil;
 import util.PasswordUtil;
-
-import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Updates.set;
-import static com.mongodb.client.model.Updates.combine;
 
 public class UserRepository {
 
@@ -37,35 +33,11 @@ public class UserRepository {
 		logger.info("User details inserted in DB");
 	}
 
-	//FIND USER DETAILS IN DB FOR LOGIN
-//	public UserModel findByEmail(String email, String password) {
-//		// password=PasswordUtil.hashPassword(password);
-//		Document doc = users.find(Filters.and(Filters.eq("email", email), Filters.eq("password", password))).first();
-//		logger.info("User found in DB");
-//		logger.debug("Document Object:" + doc);
-//		if (doc == null) {
-//			return null;
-//		}
-//
-//		UserModel usermodel = new UserModel();
-//		usermodel.setId(doc.get("_id", ObjectId.class).toHexString());
-//		//usermodel.setId(doc.getString("_id"));
-//		usermodel.setFullName(doc.getString("fullName"));
-//		usermodel.setEmail(doc.getString("email"));
-//		usermodel.setMobile(doc.getString("mobile"));
-//		usermodel.setPassword(doc.getString("password"));
-//		logger.debug("email:" + email + "password:" + password + "in userModel");
-//		return usermodel;
-//
-//	}
-	
-	
+	//USED FOR LOGIN
 	public UserModel findByEmail(String email, String password) {
 	    try {
-	        // Optional: hash password
-	        // password = PasswordUtil.hashPassword(password);
-
-	        Document doc = users.find(
+	       
+	        Document doc = users.find(				//find user all details & store in doc
 	                Filters.and(
 	                        Filters.eq("email", email),
 	                        Filters.eq("password", password)
@@ -77,11 +49,10 @@ public class UserRepository {
 	            return null;
 	        }
 
+	        //set user Model as user is in doc
 	        UserModel usermodel = new UserModel();
-	        usermodel.setId(ObjectIdUtil.toString(doc.getObjectId("_id")));		//get("_id", ObjectId.class).toHexString()
-	       // usermodel.setId(doc.getString("_id"));		//get("_id", ObjectId.class).toHexString()
-	        //(ObjectIdUtil.toString("_id")
-	        usermodel.setFullName(doc.getString("fullName"));
+	        usermodel.setId(ObjectIdUtil.toString(doc.getObjectId("_id")));		
+	        usermodel.setFullName(doc.getString("fullName"));//convert doc in string and set in userModel
 	        usermodel.setEmail(doc.getString("email"));
 	        usermodel.setMobile(doc.getString("mobile"));
 	        usermodel.setPassword(doc.getString("password"));

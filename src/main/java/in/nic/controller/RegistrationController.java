@@ -1,16 +1,12 @@
 package in.nic.controller;
 
-import java.net.http.HttpResponse;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ApplicationPath;
-import javax.ws.rs.core.Application;
+
+import javax.ws.rs.Consumes;
+
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -27,19 +23,6 @@ public class RegistrationController {
 	UserService userservice=new UserService() ;
 	boolean exists=false;
 	private static final Logger logger = LogManager.getLogger(RegistrationController.class);
-	
-	@GET
-	@Path("/tst")
-	public String test() {
-		return "Jersey 2 is working";
-	}
-	
-
-//	public String registerNewUser(
-//	@FormParam("password") String password, @FormParam("mobile") String mobile,
-//	@FormParam("email") String email, @FormParam("name") String name) {
-
-	
 	
 	@POST								//handles HTTP POST requests,Client must send a POST request
 	@Path("/user")						//Appends '/user' to this class

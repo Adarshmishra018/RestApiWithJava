@@ -4,14 +4,10 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import in.nic.controller.profileController;
 
 public class PasswordUtil {
 
-	private static final Logger logger = LogManager.getLogger(profileController.class);
+
 	
     // SHA-256 hashing method
     public static String hashPassword(String password) {

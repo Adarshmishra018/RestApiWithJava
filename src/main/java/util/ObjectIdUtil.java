@@ -12,8 +12,7 @@ public final class ObjectIdUtil {				//final class Prevents inheritance
     private ObjectIdUtil() {}					//Prevents object creation
 
     
-     //Convert String into ObjectId
-      
+     //Convert String into Object type  
     public static ObjectId toObjectId(String id) {
         if (id == null || id.isBlank()) {			//Avoids NullPointerException
             return null;
@@ -27,7 +26,7 @@ public final class ObjectIdUtil {				//final class Prevents inheritance
     }
 
     
-     // Converts ObjectId into String
+     // Converts Object Id into String
     
     public static String toString(ObjectId objectId) {
         if (objectId == null) {			//Avoids NullPointerException

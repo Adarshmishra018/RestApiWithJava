@@ -2,15 +2,8 @@ package validation;
 
 import java.util.regex.Pattern;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import in.nic.controller.profileController;
-
-public class ValidationRegex {
+public class ValidationRegex {		//For Backend validation
 	
-	private static final Logger logger = LogManager.getLogger(profileController.class);
-		
 	 // REGEX PATTERNS
     private static final Pattern NAME_PATTERN =
             Pattern.compile("^[A-Za-z ]{2,50}$");

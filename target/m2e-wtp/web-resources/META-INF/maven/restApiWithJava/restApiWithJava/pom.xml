@@ -95,5 +95,74 @@
 			<version>20240303</version>
 		</dependency>
 
+<!-- SAML2.0-->
+	<!-- Source: https://mvnrepository.com/artifact/org.opensaml/opensaml-core -->
+<dependency>
+    <groupId>org.opensaml</groupId>
+    <artifactId>opensaml-core</artifactId>
+    <version>3.3.1</version>
+    <scope>compile</scope>
+</dependency>
+<!-- Source: https://mvnrepository.com/artifact/org.opensaml/opensaml-saml-api -->
+<dependency>
+    <groupId>org.opensaml</groupId>
+    <artifactId>opensaml-saml-api</artifactId>
+    <version>3.3.1</version>
+    <scope>compile</scope>
+</dependency>
+
+<!-- Source: https://mvnrepository.com/artifact/org.opensaml/opensaml-saml-impl -->
+<dependency>
+    <groupId>org.opensaml</groupId>
+    <artifactId>opensaml-saml-impl</artifactId>
+    <version>3.3.1</version>
+    <scope>compile</scope>
+</dependency>
+
+<!-- Source: https://mvnrepository.com/artifact/org.opensaml/opensaml-security-impl -->
+<dependency>
+    <groupId>org.opensaml</groupId>
+    <artifactId>opensaml-security-impl</artifactId>
+    <version>3.3.1</version>
+    <scope>compile</scope>
+</dependency>
+
+		<!-- XML Signature -->
+		<dependency>
+			<groupId>org.apache.santuario</groupId>
+			<artifactId>xmlsec</artifactId>
+			<version>3.0.2</version>
+		</dependency>
+
+
+
+
+
+
+
+<!-- JAXB API -->
+    <dependency>
+        <groupId>javax.xml.bind</groupId>
+        <artifactId>jaxb-api</artifactId>
+        <version>2.3.1</version>
+    </dependency>
+
+    <!-- JAXB Runtime -->
+    <dependency>
+        <groupId>org.glassfish.jaxb</groupId>
+        <artifactId>jaxb-runtime</artifactId>
+        <version>2.3.1</version>
+    </dependency>
+
+    <!-- Activation (required by JAXB) -->
+    <dependency>
+        <groupId>javax.activation</groupId>
+        <artifactId>javax.activation-api</artifactId>
+        <version>1.2.0</version>
+    </dependency>
+
+
+
+
 	</dependencies>
 </project>

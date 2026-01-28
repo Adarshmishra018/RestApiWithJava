@@ -1,6 +1,5 @@
 package in.nic.model;
 
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class TokenResponse {			////Response of request Token API

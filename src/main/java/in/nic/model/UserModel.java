@@ -1,7 +1,5 @@
 package in.nic.model;
 
-import util.PasswordUtil;
-
 public class UserModel {
 
 	private String id;
@@ -11,7 +9,6 @@ public class UserModel {
 	private String password;
 	private String mobile;
 
-	//String hashedPassword =PasswordUtil.hashPassword(password);
 	public String getId() {
 		return id;
 	}

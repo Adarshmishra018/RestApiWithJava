@@ -1,142 +1,107 @@
-/*$(document).ready(function () {
+$(document).ready(function () {
 
-	    $.ajax({
-	        url: "http://localhost:8080/v1/api/profile/user",
-	        type: "GET",
-	        success: function (resp) {
-				    let user = JSON.parse(sessionStorage.getItem("userData"));
-		 console.log(" print data value which is get from api :: ", user);
-           
-	$("#username").text(user.fullName);
-    $("#email").text(user.email);
-    $("#mobile").text(user.mobile);
-    $("#userid").text(user.id);
-            
-	        },
-	        error: function () {
-	            window.location.href = "login.html";
-	        }
-	    });
+		// Load data from sessionStorage
 
-	});*/
-	
-	$(document).ready(function () {
+		// let userData = sessionStorage.getItem("userData");
+		let userDataStr = sessionStorage.getItem("userData");
 
-    // Load data from sessionStorage
-    let userData = sessionStorage.getItem("userData");
+		console.log("userData: ", userDataStr);
+		if (!userDataStr) {
+			window.location.href = "login.html";
+			return;
+		}
 
-    if (!userData) {
-        window.location.href = "login.html";
-        return;
-    }
+		let user = JSON.parse(userDataStr);
+		console.log("user: ", user);
+		// shows user details
+		$("#username").text(user.fullName);
+		$("#email").text(user.email);
+		$("#mobile").text(user.mobile);
+		$("#userid").text(user.id);
 
-    let user = JSON.parse(userData);
+		// Populate edit inputs
+		$("#editName").val(user.fullName);
+		$("#editEmail").val(user.email);
+		$("#editMobile").val(user.mobile);
 
-    // Populate view
-    $("#username").text(user.fullName);
-    $("#email").text(user.email);
-    $("#mobile").text(user.mobile);
-    $("#userid").text(user.id);
+		// Edit button click
+		$("#editBtn").click(function() {
+			$("#viewSection").hide();
+			$("#editSection").show();
+		});
 
-    // Populate edit inputs
-    $("#editName").val(user.fullName);
-    $("#editEmail").val(user.email);
-    $("#editMobile").val(user.mobile);
+		// Cancel button
+		$("#cancelBtn").click(function() {
+			$("#editSection").hide();
+			$("#viewSection").show();
+		});
 
-    // Edit button click
-    $("#editBtn").click(function () {
-        $("#viewSection").hide();
-        $("#editSection").show();
-    });
+		// Submit button
 
-    // Cancel button
-    $("#cancelBtn").click(function () {
-        $("#editSection").hide();
-        $("#viewSection").show();
-    });
+		$("#submitBtn").on("click", function(e) {
+			e.preventDefault(); // STOP form submit
+			// Ensure user exists
+			if (!user || !user.id) {
+				console.error("User data missing");
+				return;
+			}
 
-    // Submit button
-    $("#submitBtn").click(function () {
+			let updatedUser = {
+				id: user.id,
+				fullName: $("#editName").val(),
+				email: $("#editEmail").val(),
+				mobile: $("#editMobile").val(),
+				//s userId:''
+			};
 
-        // Get updated values
-        let updatedUser = {
-            id: user.id,
-            fullName: $("#editName").val(),
-            email: $("#editEmail").val(),
-            mobile: $("#editMobile").val()
-        };
-
-        // OPTIONAL: API call here
-        /*
-        $.ajax({
-            url: "http://localhost:8080/v1/api/profile/update",
-            type: "POST",
-            data: updatedUser,
-            success: function(resp) {
-                alert("Profile updated");
-            }
-        });
-        */
+			$.ajax({
+				url: "http://oauthclient.staging.nic.in/api/login/update",
+				type: "POST",
+				contentType: "application/json",
+				dataType: "json",
+				data: JSON.stringify(updatedUser),
+				success: function(resp) {
+					alert("Update successful");
+					showMessage(resp.msg, resp.status);
+					$("#updateForm").addClass("hidden");
+					location.reload();
+				},
+				error: function(xhr) {
+					console.error("Update failed", xhr.responseText);
+									}
+			});
+		    
 
         // Update UI
         $("#username").text(updatedUser.fullName);
         $("#email").text(updatedUser.email);
         $("#mobile").text(updatedUser.mobile);
 
-        // Update sessionStorage
+        //set Updated details in session
         sessionStorage.setItem("userData", JSON.stringify(updatedUser));
 
         // Switch back to view
         $("#editSection").hide();
         $("#viewSection").show();
-    });
-
-});
-
-// Logout
-function logout() {
-    sessionStorage.clear();
-    window.location.href = "login.html";
-}
-
-	
-	
-
-function showUpdateForm() {
-    $("#updateForm").toggleClass("hidden");
-}
-
-function hideUpdateForm() {
-    $("#updateForm").addClass("hidden");
-}
-
-
-$("#updateForm").submit(function(e) {
-	e.preventDefault();
-
-	$.ajax({
-		url: "/v1/api/profile/update",
-		type: "POST",
-		xhrFields: { withCredentials: true },
-		data: {
-			userid: currentUserId,
-			username: $("#u_username").val(),
-			email: $("#u_email").val(),
-			mobile: $("#u_mobile").val()
-		},
-		success: function(resp) {
-			showMessage(resp.msg, resp.status);//Uses message from server
-			$("#updateForm").addClass("hidden");
-			location.reload();   // reload profile
+		});	
+	}); 	
+		function showUpdateForm() {
+			$("#updateForm").toggleClass("hidden");
 		}
+		
+		function hideUpdateForm() {
+			$("#updateForm").addClass("hidden");
+		}
+		
+		
+		$("#updateForm").submit(function(e) {
+			e.preventDefault();
+		});
+
 	
-	});
-});
 	
-	
-	
-	function logout() {
-	    fetch("http://localhost:8080/v1/api/login/logout", {
+function logout() {
+	    fetch("http://oauthclient.staging.nic.in/api/login/logout", {
 	        method: "GET",
 	        credentials: "include"			//Tells the browser to send cookies along with the request
 	    })
@@ -145,29 +110,8 @@ $("#updateForm").submit(function(e) {
 	        alert(data.msg);
 	        window.location.href = "index.html";
 	    });
-	}
+}
 	
 	
 	
 	
-	/*$(document).ready(function () {
-
-    // Get stored data
-    let userData = sessionStorage.getItem("userData");
-	console.log("kjhgf  " ,userData);
-    if (!userData) {
-        // If no session → redirect to login
-        window.location.href = "login.html";
-        return;
-    }
-
-    let user = JSON.parse(userData);
-	console.log("qwertyu  " ,user);
-    // Set values in profile page
-    $("#username").text(user.fullName);
-    $("#email").text(user.email);
-    $("#mobile").text(user.mobile);
-    $("#userid").text(user.id);
-
-});*/
-

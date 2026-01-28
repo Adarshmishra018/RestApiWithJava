@@ -3,23 +3,57 @@ package in.nic.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class UserDetails {
+	
+	
+	
+	@JsonProperty("ParichayId")
+    private String parichayId;
 
-	@JsonProperty("first_name")
-	private String firstName;
-	
-	@JsonProperty("last_name")
-	private String lastName;
-	
-	@JsonProperty("gender")
-	private String gender;
-	
-	@JsonProperty("mobile_no")
-	private String mobileNo;
-	
-	@JsonProperty("email")
-	private String email;
-	
-	
+    @JsonProperty("UserId")
+    private String userId;
+
+    @JsonProperty("FirstName")
+    private String firstName;
+
+    @JsonProperty("LastName")
+    private String lastName;
+
+    @JsonProperty("dob")
+    private String dob;   // or LocalDate (see below)
+
+    @JsonProperty("Gender")
+    private String gender;
+
+    @JsonProperty("Mobile")
+    private String mobile;
+
+    @JsonProperty("MobileNo")
+    private String mobileNo;
+
+    @JsonProperty("EmailId")
+    private String emailId;
+
+    @JsonProperty("ProfilePic")
+    private String profilePic;
+
+    
+    
+    
+	public String getParichayId() {
+		return parichayId;
+	}
+
+	public void setParichayId(String parichayId) {
+		this.parichayId = parichayId;
+	}
+
+	public String getUserId() {
+		return userId;
+	}
+
+	public void setUserId(String userId) {
+		this.userId = userId;
+	}
 
 	public String getFirstName() {
 		return firstName;
@@ -37,12 +71,28 @@ public class UserDetails {
 		this.lastName = lastName;
 	}
 
+	public String getDob() {
+		return dob;
+	}
+
+	public void setDob(String dob) {
+		this.dob = dob;
+	}
+
 	public String getGender() {
 		return gender;
 	}
 
 	public void setGender(String gender) {
 		this.gender = gender;
+	}
+
+	public String getMobile() {
+		return mobile;
+	}
+
+	public void setMobile(String mobile) {
+		this.mobile = mobile;
 	}
 
 	public String getMobileNo() {
@@ -53,15 +103,28 @@ public class UserDetails {
 		this.mobileNo = mobileNo;
 	}
 
-	public String getEmail() {
-		return email;
+	public String getEmailId() {
+		return emailId;
 	}
 
-	public void setEmail(String email) {
-		this.email = email;
+	public void setEmailId(String emailId) {
+		this.emailId = emailId;
 	}
-	
-	
-	
+
+	public String getProfilePic() {
+		return profilePic;
+	}
+
+	public void setProfilePic(String profilePic) {
+		this.profilePic = profilePic;
+	}
+
+	@Override
+	public String toString() {
+		return "UserDetails [parichayId=" + parichayId + ", userId=" + userId + ", firstName=" + firstName
+				+ ", lastName=" + lastName + ", dob=" + dob + ", gender=" + gender + ", mobile=" + mobile
+				+ ", mobileNo=" + mobileNo + ", emailId=" + emailId + ", profilePic=" + profilePic + "]";
+	}
+
 	
 }

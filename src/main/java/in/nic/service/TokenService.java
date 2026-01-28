@@ -8,7 +8,7 @@ import org.apache.logging.log4j.Logger;
 
 import in.nic.model.RefreshTokenResponse;
 import in.nic.model.RevokeTokenResponse;
-import in.nic.model.TokenResponse;
+import oauth.ParichayOAuthClient;
 
 public class TokenService {
 	private static final Logger logger = LogManager.getLogger(TokenService.class);
@@ -18,14 +18,14 @@ public class TokenService {
 
 	    logger.debug("Inside refresh token service ")	;
 	    HttpSession session = request.getSession(false);
-      /*-->*/  if (session == null) {				
+      if (session == null) {				
             throw new RuntimeException("Session not found");
         }
 
         String refreshToken =(String) session.getAttribute("refresh_token");//get refresh token from session
 
         
-        /*-->*/ if (refreshToken == null || refreshToken.isBlank()) {
+        if (refreshToken == null || refreshToken.isBlank()) {
             throw new RuntimeException("Refresh token not found");
         }
 
@@ -46,7 +46,7 @@ public class TokenService {
     
     //REVOKE SERVICE
     public static RevokeTokenResponse revokeToken(HttpServletRequest request) {
-    	 RevokeTokenResponse logout =null;
+    	 
     	logger.debug("Inside revoke token service")	;
         HttpSession session = request.getSession(false);
         logger.debug("session",session)	;
@@ -55,18 +55,18 @@ public class TokenService {
                 throw new RuntimeException("Session not found");		//throws exception to calling class if session is null
             }
 
-            TokenResponse token =(TokenResponse) session.getAttribute("access_token");  //fetch accesss token from session
-            
-            String accessToken = token.getAccessToken();//extract the actual token string
-            
+            String accessToken =(String) session.getAttribute("access_token");  //fetch accesss token from session in token type obj
+//           TokenResponse token =(TokenResponse) session.getAttribute("access_token");  //fetch accesss token from session in token type obj
+           
+//            String accessToken = token.getAccessToken();//extract the actual token string
+           
             logger.debug("Print session accessToken: {}",accessToken);
 
-            
             if (accessToken == null || accessToken.isBlank()) {		//throws exception to calling class if access token is null
                 throw new RuntimeException("Refresh token not found");
             }
             //Call OAuth revoke token API & return response to AuthController
-         logout = ParichayOAuthClient.revokeAccessToken(accessToken);
+            RevokeTokenResponse logout = ParichayOAuthClient.revokeAccessToken(accessToken);
             
             logger.debug("Print logout response: {}",logout);
            

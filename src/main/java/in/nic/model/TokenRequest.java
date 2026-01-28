@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class TokenRequest {
 
-    @JsonProperty("grant_type")
+    @JsonProperty("grant_type")			//maps "grant_type" in JSON to grant_type in Java
     private String grantType;
 
     @JsonProperty("client_id")

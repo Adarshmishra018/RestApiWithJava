@@ -60,7 +60,7 @@ $(document).ready(function() {     //Waits until HTML is fully loaded
 		};
 
 		$.ajax({				//Starts an AJAX HTTP request      //Client → Server communication
-			url: "http://oauthclient.staging.nic.in/api/register/user",   //API endpoint on your Jersey server
+			url: "http://localhost:8085/Demo/api/register/user",   //API endpoint on your Jersey server
 			type: "POST",										//Sends data to server
 			contentType: "application/json",					//Tells server:I am sending JSON data
 			data: JSON.stringify(userData),						//Converts JS object to JSON string//Sends JSON in HTTP request body

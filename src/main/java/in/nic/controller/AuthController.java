@@ -37,9 +37,8 @@ public class AuthController { // that handles OAuth login redirect,
 	@GET
 	@Path("/loginOAuth")
 	public Response loginOAuth() throws NoSuchAlgorithmException {
-		logger.debug("loginOAuth class called ");
+		logger.info("Initiating Jan-Parichay OAuth 2.0 PKCE authorization flow");
 
-		// commonly used variables
 		String codeVerifier = "";
 		String codeChallenge = "";
 		String state = "";
@@ -48,66 +47,74 @@ public class AuthController { // that handles OAuth login redirect,
 		ResourceBundle config = ResourceBundle.getBundle("config");
 
 		try {
-			// Generate PKCE Code Verifier
-			codeVerifier = PKCEUtil.generateCodeVerifier();
+			// Generate PKCE Code Verifier & Challenge
+			codeVerifier = PKCEUtil.generateCodeVerifier().trim();
+			codeChallenge = PKCEUtil.generateCodeChallenge(codeVerifier).trim();
+			state = UUID.randomUUID().toString().trim();
 			
-			//create a new session & set code verifier
-		 request.getSession(true).setAttribute("code_verifier", codeVerifier);
-			
-			// Generate PKCE Code challenge
-			codeChallenge = PKCEUtil.generateCodeChallenge(codeVerifier);
-			// Generate state
-			state = UUID.randomUUID().toString();
-			logger.debug(" code:"+codeVerifier+"/nchallenge:"+codeChallenge+"/nstate:"+state);
+			// Store code_verifier in HTTP session
+			request.getSession(true).setAttribute("code_verifier", codeVerifier);
+
+			logger.debug("Generated PKCE challenge (method={}), state={}", 
+					config.getString("CODE_CHALLENGE_METHOD"), state);
+
 			// Request Authorization Code (Redirect Call) 
-			url =  config.getString("AUTHORIZE_URL") + "?response_type="
+			url = config.getString("AUTHORIZE_URL") + "?response_type="
 					+ config.getString("RESPONSE_TYPE") + "&client_id=" + config.getString("CLIENT_ID")
 					+ "&redirect_uri=" + URLEncoder.encode(config.getString("REDIRECT_URI"), StandardCharsets.UTF_8)
 					+ "&scope=" + config.getString("SCOPE") + "&code_challenge=" + codeChallenge
 					+ "&code_challenge_method=" + config.getString("CODE_CHALLENGE_METHOD") + "&state=" + state;
+
+		
+			
+			
+			logger.info("Redirecting client to Jan-Parichay OAuth authorization endpoint: client_id={}, redirect_uri={}",
+					config.getString("CLIENT_ID"), config.getString("REDIRECT_URI"));
+
 		} catch (Exception e) {
-			logger.debug("Exception : {} ", e);
+			logger.error("Error occurred while generating OAuth authorization URL", e);
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+					.entity("{\"msg\":\"Failed to initiate OAuth flow\"}")
+					.build();
 		}
 
-		logger.debug("url:" + url);
-		return Response.temporaryRedirect(java.net.URI.create(url)).build();// redirects to Jan-Parichay login page
+		return Response.temporaryRedirect(java.net.URI.create(url)).build();
 	}
 	
-	
-	 @POST
-	    @Path("/refresh")
-	    @Produces(MediaType.APPLICATION_JSON)			//returns data in JSON format
-	    public Response refresh() {
+	@POST
+	@Path("/refresh")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response refresh() {
+		logger.info("Received request to refresh OAuth access token");
+		try {
+			TokenService.refreshToken(request);
+			logger.info("OAuth token successfully refreshed for active session");
+			return Response.ok("{\"msg\":\"Token refreshed successfully\"}").build();
 
-	        try {
-	        	logger.debug("Into refresh ");
-	        	 TokenService.refreshToken(request);
-	             return Response.ok().build();				//send a response back to the client.
-		
-	        } catch (Exception e) {
-	        	logger.debug("Error: {}", e);
-	            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)//Sets the status code
-	                    .entity("{\"msg\":\"Token refresh failed\"}")			//Sets response body JSON as String.
-	                    .build();												//creates the Response object
-	        }
-	    }
+		} catch (Exception e) {
+			logger.error("Failed to refresh OAuth token", e);
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+					.entity("{\"msg\":\"Token refresh failed\"}")
+					.build();
+		}
+	}
 	 
-	 	@POST
-	    @Path("/logout")
-	    @Produces(MediaType.APPLICATION_JSON)
-	    public Response logout() {
+	@POST
+	@Path("/logout")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response logout() {
+		logger.info("Received request to revoke OAuth tokens and terminate session");
+		try {
+			TokenService.revokeToken(request);
+			logger.info("OAuth token successfully revoked and session terminated");
+			return Response.ok("{\"msg\":\"Logged out successfully\"}").build();
 
-	        try {
-	        	logger.debug("Into logout");
-	        	 TokenService.revokeToken(request);
-	             return Response.ok().build();
-		
-	        } catch (Exception e) {
-	        	logger.debug("Error: {}", e);
-	            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-	                    .entity("{\"msg\":\"Token refresh failed\"}")
-	                    .build();
-	        }
-	    }
+		} catch (Exception e) {
+			logger.error("Failed to revoke OAuth token", e);
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+					.entity("{\"msg\":\"Token revocation failed\"}")
+					.build();
+		}
+	}
 
 }

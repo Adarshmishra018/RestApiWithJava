@@ -15,6 +15,8 @@ import javax.ws.rs.core.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 public class UserDetailsClient {  //request for user details
 
 	private static final Logger logger = LogManager.getLogger(profileController.class);

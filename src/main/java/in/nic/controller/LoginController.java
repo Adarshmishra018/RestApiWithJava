@@ -29,7 +29,7 @@ public class LoginController {
 	UserService userService = new UserService();
 	UserModel usermodel = null;
 	boolean updated = false;
-	String sessionId=UUID.randomUUID().toString();;
+	String sessionId = UUID.randomUUID().toString();
 	SessionService sessionService = new SessionService();
 	@Context HttpServletResponse httpResponse;
 	@Context HttpServletRequest httpRequest;
@@ -43,34 +43,28 @@ public class LoginController {
 	public String loginNewUser(@FormParam("password") String password, @FormParam("email") String email,
 			@Context HttpServletResponse httpResponse) {
 														
-		logger.info("Login Controller called");
+		logger.info("Login Controller called for email: {}", email);
 		password = PasswordUtil.hashPassword(password);
-		logger.debug(" email" + email);
-		logger.debug(" Password" + password);
+		logger.debug("email: {}", email);
 		JSONObject response = new JSONObject(); // final JSON you will send to the client
 		
-
 		try {
 			usermodel = userService.getUser(email, password);
-			if (usermodel == null) { // User NOT found
-				logger.debug("usermodel is " + usermodel);
+			if (usermodel == null) { // check null
+				logger.warn("Authentication failed: Invalid email or password for {}", email);
 				response.put("status", "danger");
 				response.put("msg", "Invalid email or password");
 				response.put("statusCode", 401);
 				logger.debug("response : " + response);
 				return response.toString();
 			}
-			logger.debug("usermodel is " + usermodel);
-			
-			 
+			logger.info("User authenticated successfully: email={}, userId={}", email, usermodel.getId());
 		
-			sessionService.createRedisSession(sessionId);// Store sessionID in Redis
-			sessionService.createCookieSession(sessionId,httpResponse);// Set SESSION_ID in cookie
-				
-			logger.debug("sessionId stored in both : " + sessionId);
-			logger.debug("response : " + response);
+			sessionService.createRedisSession(sessionId); // Store sessionID in Redis
+			sessionService.createCookieSession(sessionId, httpResponse); // Set SESSION_ID in cookie
+			logger.info("Session created and stored in Redis and cookie: sessionId={}", sessionId);
 			
-			JSONObject userJson = new JSONObject();
+			JSONObject userJson = new JSONObject(); // for data
 			userJson.put("id", usermodel.getId());
 			userJson.put("fullName", usermodel.getFullName());
 			userJson.put("email", usermodel.getEmail());
@@ -81,17 +75,14 @@ public class LoginController {
 			response.put("data", userJson);
 			response.put("msg", "User Logged in Successfully!");
 
-			logger.debug("response : " + response);
-			logger.info("User logged in sucessfully");
-
+			logger.info("User logged in successfully: email={}", email);
 			return response.toString();
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Exception during user login for email: {}", email, e);
 			response.put("status", "error");
 			response.put("statusCode", 500);
 			response.put("msg", "Internal server error");
-			logger.error("Error while logging:" + response);
 
 			return response.toString();
 		}
@@ -102,18 +93,19 @@ public class LoginController {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response updateProfile(UserModel usermodel) {
-
+		logger.info("Profile update called for userId: {}", usermodel != null ? usermodel.getId() : "null");
 		boolean updated = userService.updateProfile(usermodel);
-		logger.debug("Values Updated");
 		JSONObject response = new JSONObject();
 
 		if (!updated) {
+			logger.warn("Profile update failed for userId: {}", usermodel != null ? usermodel.getId() : "null");
 			response.put("status", "error");
 			response.put("msg", "Profile Update failed");
 			response.put("statusCode", 401);
 			return Response.status(401).entity(response.toString()).build();
 		}
 
+		logger.info("Profile updated successfully for userId: {}", usermodel != null ? usermodel.getId() : "null");
 		response.put("status", "success");
 		response.put("msg", "Profile Updated successfully");
 		response.put("statusCode", 200);
@@ -121,53 +113,51 @@ public class LoginController {
 		return Response.ok(response.toString()).build();
 	}
 
-//FORGOT PASSWORD	
+	// FORGOT PASSWORD	
 	@POST
 	@Path("/reset")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces(MediaType.APPLICATION_JSON)
 	public String resetPassword(@FormParam("email") String email, @FormParam("password") String password) {
-
+		logger.info("Password reset requested for email: {}", email);
 		JSONObject response = new JSONObject(); // final JSON you will send to the client
 		password = PasswordUtil.hashPassword(password);
 		updated = userService.resetPassword(email, password);
 
 		if (!updated) {
-			logger.info("Error in changing Details ");
+			logger.warn("Password reset failed for email: {}", email);
 			response.put("status", "error"); // putting values in JSON Object
 			response.put("statusCode", 500);
 			response.put("msg", "Error in changing Password ");
 			return response.toString();
 		}
 
-		logger.info("Details changed successfully");
+		logger.info("Password updated successfully for email: {}", email);
 		response.put("status", "success"); // putting values in JSON Object
 		response.put("statusCode", 200);
 		response.put("msg", "Password updated Successfully!");
 		return response.toString();
 	}
 
-//FOR LOGOUT	 
+	// FOR LOGOUT	 
 	@GET
 	@Path("/logout")
 	@Produces(MediaType.APPLICATION_JSON)
 	public String logout() {
-
-		logger.info("Logout called");
+		logger.info("Logout called, clearing session: sessionId={}", sessionId);
 		try {
-
 			sessionService.deleteRedisSession(sessionId);
-			sessionService.deleteCookieSession(sessionId,httpRequest,httpResponse);
-			logger.debug(" sessionId deleted: " + sessionId);
+			sessionService.deleteCookieSession(sessionId, httpRequest, httpResponse);
+			logger.info("Session successfully deleted from Redis and cookie: sessionId={}", sessionId);
 		} catch (Exception e) {
-			logger.debug("Exception {}",e);
+			logger.error("Exception during logout: sessionId={}", sessionId, e);
 		}
 		
 		// Build response
 		JSONObject res = new JSONObject();
 		res.put("status", "success");
 		res.put("msg", "Logged out successfully");
-		logger.debug("Response:" + res);
+		logger.info("User logged out successfully");
 
 		return res.toString();
 	}

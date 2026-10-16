@@ -47,66 +47,66 @@ public class SamlLogoutServlet extends HttpServlet {
 	    protected void doPost(HttpServletRequest request,
 	                          HttpServletResponse response)
 	            throws ServletException, IOException {
-	    	logger.debug("Inside saml/logout");
-	    	 try {
-	    		 InitializationService.initialize();
+	    	logger.info("Received SAML Single Logout (SLO) callback at /saml/logout");
+	    	try {
+	    		InitializationService.initialize();
 	    		 
-	    	 String samlResponseB64 = request.getParameter("SAMLResponse");
-	            if (samlResponseB64 == null) {
+	    		String samlResponseB64 = request.getParameter("SAMLResponse");
+	            if (samlResponseB64 == null || samlResponseB64.isBlank()) {
+	                logger.warn("SAML logout callback received without 'SAMLResponse' parameter");
 	                response.getWriter().println("Missing SAMLResponse");
 	                return;
 	            }
 	            
-	            logger.debug("samlResponseB64{}",samlResponseB64);
+	            logger.debug("Received Base64 SAMLResponse length: {} chars", samlResponseB64.length());
 	            
-	            byte[] decodedBytes =Base64.getDecoder().decode(samlResponseB64);
-	          
-	            String samlXml = new String(decodedBytes, StandardCharsets.UTF_8);//decode Base64
-	           
-
-	            logger.debug("SAMLResponse decoded: {}",samlXml);
-	            
+	            byte[] decodedBytes = Base64.getDecoder().decode(samlResponseB64);
+	            String samlXml = new String(decodedBytes, StandardCharsets.UTF_8);
+	            logger.debug("Decoded SAML Logout XML payload length: {} chars", samlXml.length());
 	            
 	            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 	            factory.setNamespaceAware(true);
+	            // Protect against XXE
+	            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
 
 	            DocumentBuilder builder = factory.newDocumentBuilder();
-	            Document doc = builder.parse(new ByteArrayInputStream(samlXml.getBytes()));
+	            Document doc = builder.parse(new ByteArrayInputStream(samlXml.getBytes(StandardCharsets.UTF_8)));
 
 	            Element root = doc.getDocumentElement();
-
-	            // Attributes
-	            System.out.println("ID: " + root.getAttribute("ID"));
-	            System.out.println("IssueInstant: " + root.getAttribute("IssueInstant"));
-	            System.out.println("Version: " + root.getAttribute("Version"));
+	            logger.info("Parsed SAML Logout document: rootElement={}, ID={}, Version={}", 
+	                    root.getNodeName(), root.getAttribute("ID"), root.getAttribute("Version"));
 
 	            // Issuer
 	            NodeList issuerList = doc.getElementsByTagNameNS(
 	                    "urn:oasis:names:tc:SAML:2.0:assertion", "Issuer");
-
 	            if (issuerList.getLength() > 0) {
-	                System.out.println("Issuer: " + issuerList.item(0).getTextContent());
+	                logger.info("SAML Logout Issuer: {}", issuerList.item(0).getTextContent());
 	            }
 
 	            // Status Code
 	            NodeList statusCodeList = doc.getElementsByTagNameNS(
 	                    "urn:oasis:names:tc:SAML:2.0:protocol", "StatusCode");
-
 	            if (statusCodeList.getLength() > 0) {
 	                Element statusCode = (Element) statusCodeList.item(0);
-	                System.out.println("StatusCode: " + statusCode.getAttribute("Value"));
+	                logger.info("SAML Logout response status: {}", statusCode.getAttribute("Value"));
 	            }
+
 	            HttpSession session = request.getSession(false);
-	            logger.debug("session value",request.getAttribute("USER"));
-	    		     session.invalidate();
-	    		 logger.debug("session.invalidated");
+	            if (session != null) {
+	                logger.info("Invalidating user session: sessionId={}", session.getId());
+	                session.invalidate();
+	                logger.info("User session successfully invalidated upon SAML logout");
+	            } else {
+	                logger.info("No active HTTP session found to invalidate during SAML logout");
+	            }
+
+	            logger.info("Redirecting user to post-logout landing page");
 	            response.sendRedirect("http://jpmeripehchaan.staging.nic.in/index.html");
-	            } catch (Exception e) {
-					
-					e.printStackTrace();
-				}
-	            
-	    	
+
+	        } catch (Exception e) {
+	            logger.error("Exception occurred while processing SAML logout response", e);
+	            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "SAML logout processing failed");
+	        }
 	    }
 
 }

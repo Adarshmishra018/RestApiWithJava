@@ -1,10 +1,10 @@
 package in.nic.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class UserDetails {
-	
-	
 	
 	@JsonProperty("ParichayId")
     private String parichayId;
@@ -35,6 +35,9 @@ public class UserDetails {
 
     @JsonProperty("ProfilePic")
     private String profilePic;
+
+    @JsonProperty("verificationIds")
+    private Object verificationIds;
 
     
     
@@ -119,11 +122,20 @@ public class UserDetails {
 		this.profilePic = profilePic;
 	}
 
+	public Object getVerificationIds() {
+		return verificationIds;
+	}
+
+	public void setVerificationIds(Object verificationIds) {
+		this.verificationIds = verificationIds;
+	}
+
 	@Override
 	public String toString() {
 		return "UserDetails [parichayId=" + parichayId + ", userId=" + userId + ", firstName=" + firstName
 				+ ", lastName=" + lastName + ", dob=" + dob + ", gender=" + gender + ", mobile=" + mobile
-				+ ", mobileNo=" + mobileNo + ", emailId=" + emailId + ", profilePic=" + profilePic + "]";
+				+ ", mobileNo=" + mobileNo + ", emailId=" + emailId + ", profilePic=" + profilePic
+				+ ", verificationIds=" + verificationIds + "]";
 	}
 
 	

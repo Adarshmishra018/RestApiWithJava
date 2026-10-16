@@ -102,12 +102,15 @@ public class profileController {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public String updateProfile(UserModel usermodel) {
+		String targetId = (usermodel != null) ? usermodel.getId() : "null";
+		logger.info("Profile update request called for userId: {}", targetId);
 
 	    boolean updated = userservice.updateProfile(usermodel);
 
 	    JSONObject response = new JSONObject();
 
 	    if (!updated) {
+	    	logger.warn("Profile update failed for userId: {}", targetId);
 	        response.put("status", "error");
 	        response.put("msg", "Profile Update failed");
 	        response.put("statusCode", 401);
@@ -115,6 +118,7 @@ public class profileController {
 	        return response.toString();
 	    }
 
+	    logger.info("Profile updated successfully for userId: {}", targetId);
 	    response.put("status", "success");
 	    response.put("msg", "Profile Updated successfully");
 	    response.put("statusCode", 200);

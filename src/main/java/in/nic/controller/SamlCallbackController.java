@@ -40,77 +40,82 @@ public class SamlCallbackController extends HttpServlet {
                           HttpServletResponse response)
             throws ServletException, IOException {
 
-    	logger.debug("Inside saml/home");
+    	logger.info("Received SAML callback at /saml/home");
     	
     	response.setContentType("text/html;charset=UTF-8");
 
     	try {
-    		
-            // OpenSAML initialize to parse or create SAML objects,
-            InitializationService.initialize();	// This loads OpenSAML internals parsers, builders, security configs
+            // OpenSAML initialization
+            InitializationService.initialize();
 
-            //Read Base64-encoded SAMLResponse parameter sent by the IdP
+            // Read Base64-encoded SAMLResponse parameter sent by the IdP
             String samlResponseB64 = request.getParameter("SAMLResponse");
-            if (samlResponseB64 == null) {
+            if (samlResponseB64 == null || samlResponseB64.isBlank()) {
+                logger.warn("SAML callback received without 'SAMLResponse' parameter from IdP");
                 response.getWriter().println("Missing SAMLResponse");
                 return;
             }
             
-            logger.debug("samlResponseB64{}",samlResponseB64);
+            logger.info("SAMLResponse parameter received (length: {} chars). Decoding payload...", samlResponseB64.length());
             
-            byte[] decodedBytes =Base64.getDecoder().decode(samlResponseB64);//Base64 Decode and store in bytes
-            String samlXml =new String(decodedBytes, StandardCharsets.UTF_8);//converts bytes to string
+            byte[] decodedBytes = Base64.getDecoder().decode(samlResponseB64);
+            String samlXml = new String(decodedBytes, StandardCharsets.UTF_8);
+            logger.debug("Successfully decoded SAML XML payload (length: {} chars)", samlXml.length());
+
+            // Convert XML into OpenSAML Java Object
+            XMLObject xmlObject = XMLObjectSupport.unmarshallFromReader(
+                    XMLObjectProviderRegistrySupport.getParserPool(),
+                    new java.io.StringReader(samlXml));
             
-            logger.debug("SAMLResponse decoded\n");
+            logger.debug("Successfully unmarshalled XML into OpenSAML XMLObject: {}", xmlObject.getElementQName());
 
-            //Convert XML into OpenSAML Java Object to easily access Assertions,Attribute,NameID,Conditions,SessionIndex
-            XMLObject xmlObject =
-                   XMLObjectSupport.unmarshallFromReader(             //Reads XML text//Parses it into a DOM document//Identifies the root element //Uses registered builders//Creates a Java object tree
-                          XMLObjectProviderRegistrySupport
-                                   .getParserPool(),
-                           new java.io.StringReader(samlXml));
-            
-            logger.debug("xmlObject: {}",xmlObject);
+            Response samlResponse = (Response) xmlObject;
 
-            Response samlResponse = (Response) xmlObject; //Cast to Response type
-
-         // check if response is empty
+            // Check if response contains assertions
             if (samlResponse.getAssertions().isEmpty()) {
+                logger.warn("SAMLResponse validation failed: No assertions found in IdP response");
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
                         "No Assertion found in SAMLResponse");
                 return;
             }
-            //Get the First Assertion //  Assertion has proof of authentication,user attributes
+
+            // Get the First Assertion
             Assertion assertion = samlResponse.getAssertions().get(0);
+            logger.info("Extracting attributes from SAML Assertion ID: {}", assertion.getID());
             
-            //Map Assertion values to SamlUser 
+            // Map Assertion values to SamlUser 
             SamlUser user = SamlAttributeMapper.mapToUser(assertion);
-            logger.debug("user: {}",user);
+            logger.info("Successfully mapped SAML assertion to user: userId={}, name={} {}", 
+                    user.getUserId(), user.getFirstName(), user.getLastName());
          
             // Store SAMLUser details in session
             HttpSession session = request.getSession(true);
             session.setAttribute("USER", user);
+            logger.info("User session established for SAML user: sessionId={}", session.getId());
           
-            DateTime notOnOrAfterDt = assertion.getConditions().getNotOnOrAfter();//session validity time sent by Idp
-            Instant notOnOrAfter = notOnOrAfterDt.toInstant();// convert in instant type
-            session.setAttribute("notOnOrAfter",notOnOrAfter);		//store in session
+            if (assertion.getConditions() != null && assertion.getConditions().getNotOnOrAfter() != null) {
+                DateTime notOnOrAfterDt = assertion.getConditions().getNotOnOrAfter();
+                Instant notOnOrAfter = notOnOrAfterDt.toInstant();
+                session.setAttribute("notOnOrAfter", notOnOrAfter);
+                logger.debug("SAML assertion validity expires at: {}", notOnOrAfter);
+            }
             
-            logger.debug("notOnOrAfter {}",session.getAttribute("notOnOrAfter"));
-            
-             //store NameID & SessionIndex for logout
-            session.setAttribute("SAML_NAME_ID",user.getUserId());	// set name id as user id       
-            logger.debug("user id {}",session.getAttribute("SAML_NAME_ID"));
+            // Store NameID & SessionIndex for logout
+            session.setAttribute("SAML_NAME_ID", user.getUserId());
 
-            //set session index from assertion file
-            session.setAttribute( "SAML_SESSION_INDEX", assertion.getAuthnStatements().get(0).getSessionIndex());
-            logger.debug("SESSION_INDEX {}",session.getAttribute("SAML_SESSION_INDEX"));
+            if (!assertion.getAuthnStatements().isEmpty() && assertion.getAuthnStatements().get(0).getSessionIndex() != null) {
+                String sessionIndex = assertion.getAuthnStatements().get(0).getSessionIndex();
+                session.setAttribute("SAML_SESSION_INDEX", sessionIndex);
+                logger.debug("Stored SAML sessionIndex for SLO: {}", sessionIndex);
+            }
 
-            // Redirect to profile page
+            // Forward to profile page
+            logger.info("Forwarding authenticated SAML user to /samlProfile.jsp");
             RequestDispatcher rd = request.getRequestDispatcher("/samlProfile.jsp");
             rd.forward(request, response);
             
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Exception occurred while processing SAMLResponse callback", e);
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                     "SAML processing failed");
         }

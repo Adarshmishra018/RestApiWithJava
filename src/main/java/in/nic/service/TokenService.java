@@ -13,69 +13,63 @@ import oauth.ParichayOAuthClient;
 public class TokenService {
 	private static final Logger logger = LogManager.getLogger(TokenService.class);
 
-	//REFRESH SERVICE
+	// REFRESH SERVICE
     public static RefreshTokenResponse refreshToken(HttpServletRequest request) {
-
-	    logger.debug("Inside refresh token service ")	;
-	    HttpSession session = request.getSession(false);
-      if (session == null) {				
+        logger.info("Executing OAuth token refresh service");
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            logger.warn("Token refresh rejected: No active HTTP session found");
             throw new RuntimeException("Session not found");
         }
 
-        String refreshToken =(String) session.getAttribute("refresh_token");//get refresh token from session
-
-        
+        String refreshToken = (String) session.getAttribute("refresh_token");
         if (refreshToken == null || refreshToken.isBlank()) {
-            throw new RuntimeException("Refresh token not found");
+            logger.warn("Token refresh rejected: No refresh_token attribute stored in session {}", session.getId());
+            throw new RuntimeException("Refresh token not found in session");
         }
 
-         //Call OAuth refresh token API & return response to AUthController
-        RefreshTokenResponse newToken =ParichayOAuthClient.refreshAccessToken(refreshToken);
-        
-        logger.debug("Print new token: {}",newToken); //refresh token response
+        logger.debug("Found refresh token in session. Calling OAuth provider...");
+        RefreshTokenResponse newToken = ParichayOAuthClient.refreshAccessToken(refreshToken);
 
-        // Set new access & Refresh in session
+        if (newToken == null || newToken.getAccessToken() == null) {
+            logger.error("OAuth provider returned empty token response during refresh");
+            throw new RuntimeException("Failed to obtain new access token from provider");
+        }
+
+        // Set new access & refresh token in session
         session.setAttribute("access_token", newToken.getAccessToken());
-        session.setAttribute("refresh_token", newToken.getRefreshToken());
+        if (newToken.getRefreshToken() != null && !newToken.getRefreshToken().isBlank()) {
+            session.setAttribute("refresh_token", newToken.getRefreshToken());
+        }
 
-         
+        logger.info("Session successfully updated with renewed access token. Expiry: {}", newToken.getExpiresIn());
         return newToken;
     }
     
-    
-    
-    //REVOKE SERVICE
+    // REVOKE SERVICE
     public static RevokeTokenResponse revokeToken(HttpServletRequest request) {
-    	 
-    	logger.debug("Inside revoke token service")	;
+        logger.info("Executing OAuth token revocation service");
         HttpSession session = request.getSession(false);
-        logger.debug("session",session)	;
        
-            if (session == null) {					
-                throw new RuntimeException("Session not found");		//throws exception to calling class if session is null
-            }
+        if (session == null) {
+            logger.warn("Token revocation skipped: No active HTTP session found");
+            throw new RuntimeException("Session not found");
+        }
 
-            String accessToken =(String) session.getAttribute("access_token");  //fetch accesss token from session in token type obj
-//           TokenResponse token =(TokenResponse) session.getAttribute("access_token");  //fetch accesss token from session in token type obj
-           
-//            String accessToken = token.getAccessToken();//extract the actual token string
-           
-            logger.debug("Print session accessToken: {}",accessToken);
+        String accessToken = (String) session.getAttribute("access_token");
+        if (accessToken == null || accessToken.isBlank()) {
+            logger.warn("No active access token found in session {} to revoke. Invalidating session directly.", session.getId());
+            session.invalidate();
+            return null;
+        }
 
-            if (accessToken == null || accessToken.isBlank()) {		//throws exception to calling class if access token is null
-                throw new RuntimeException("Refresh token not found");
-            }
-            //Call OAuth revoke token API & return response to AuthController
-            RevokeTokenResponse logout = ParichayOAuthClient.revokeAccessToken(accessToken);
-            
-            logger.debug("Print logout response: {}",logout);
-           
-            if (session != null) {
-                session.invalidate();//delete session
-               
-            }
-            
-            return logout;    
+        logger.info("Calling OAuth provider to revoke active access token for session {}", session.getId());
+        RevokeTokenResponse logout = ParichayOAuthClient.revokeAccessToken(accessToken);
+
+        session.invalidate();
+        logger.info("HTTP session successfully invalidated following token revocation");
+
+        return logout;    
     }
 }
 

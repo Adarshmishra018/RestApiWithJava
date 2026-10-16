@@ -1,7 +1,9 @@
 package in.nic.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class RefreshTokenResponse {			//Response of RefreshToken API
 
 	@JsonProperty("access_token") //maps "access_token" in JSON to accessToken in Java

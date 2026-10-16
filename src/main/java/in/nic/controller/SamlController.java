@@ -1,7 +1,9 @@
 package in.nic.controller;
 
+import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Properties;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -22,83 +24,113 @@ import util.SamlBase64Util;
 public class SamlController {
 
 	private static final Logger logger = LogManager.getLogger(SamlController.class);
+//	
+//    private static final String IDP_LOGIN_URL =
+//    		"https://janparichaystag.meripehchaan.gov.in/v1/SAMLLogin";
+//    
+//    private static final String LOGOUT_IDP_ENDPOINT =
+//    		"https://janparichaystag.meripehchaan.gov.in/v1/SAMLLogout";
+//   
+	private static final Properties prop = new Properties();
+
+	static {
+	    try (InputStream input = SamlController.class
+	            .getClassLoader()
+	            .getResourceAsStream("config.properties")) {
+
+	        prop.load(input);
+
+	    } catch (Exception e) {
+	        throw new RuntimeException("Unable to load config.properties", e);
+	    }
+	}
+    
 	
-    private static final String IDP_LOGIN_URL =
-    		"https://janparichaystag.meripehchaan.gov.in/v1/SAMLLogin";
-    
-    private static final String LOGOUT_IDP_ENDPOINT =
-    		"https://janparichaystag.meripehchaan.gov.in/v1/SAMLLogout";
-   
-    
+
+	private static final String IDP_LOGIN_URL =
+	        prop.getProperty("IDP_LOGIN_URL");
+
+	private static final String LOGOUT_IDP_ENDPOINT =
+	        prop.getProperty("LOGOUT_IDP_ENDPOINT");
+	
     
     @GET
     @Path("/login")
     public Response login() {		
+        logger.info("Initiating SAML SSO login process");
+        try {
+            // Building XML for login AuthnRequest
+            String samlXml = SamlAuthnRequestBuilder.build();
+            logger.debug("Constructed AuthnRequest XML: length={} characters", samlXml != null ? samlXml.length() : 0);
 
-    	logger.debug("Inside saml/login");
-        // Building XML for login AuthnRequest
-        String samlXml = SamlAuthnRequestBuilder.build(); // returns XML string
+            // Convert XML to Base64
+            String base64Request = SamlBase64Util.encodeXmlToBase64(samlXml);
 
-        // Convert XML to Base64
-        String base64Request = SamlBase64Util.encodeXmlToBase64(samlXml);//base 64 xml
+            // URL encode Base64 required for HTTP-Redirect binding
+            String encodedRequest = URLEncoder.encode(base64Request, StandardCharsets.UTF_8);
 
-        // URL encode Base64 i.e required for redirect 
-        String encodedRequest = URLEncoder.encode(		//encode base64Request
-                base64Request,
-                StandardCharsets.UTF_8
-        );
-        logger.debug("encodedRequest {}",encodedRequest);
+//            String targetIdpUrl = (IDP_LOGIN_URL != null && !IDP_LOGIN_URL.isBlank()) 
+//                    ? IDP_LOGIN_URL 
+//                    : "https://janparichaystag.meripehchaan.gov.in/v1/SAMLLogin";
 
-        // Build redirect URL for login 
-        String redirectUrl = IDP_LOGIN_URL
-                + "?SAMLRequest=" + encodedRequest          
-                + "&RelayState=RelayState";
+            
+            String targetIdpUrl = (IDP_LOGIN_URL != null && !IDP_LOGIN_URL.isBlank()) 
+                    ? IDP_LOGIN_URL 
+                    : "https://parichay.staging.nic.in/v1/samlLogin";
 
-        logger.debug("redirectUrl {}",redirectUrl);
-        
-        // redirect call to Parichay login Page
-        return  Response.temporaryRedirect(java.net.URI.create(redirectUrl)).build();
-        		  
+            String redirectUrl = targetIdpUrl
+                    + "?SAMLRequest=" + encodedRequest          
+                    + "&RelayState=RelayState";
+
+                        
+            logger.info("Redirecting client to SAML IdP login endpoint: {}", targetIdpUrl);
+            logger.debug("Full SAML redirect URL: {}", redirectUrl);
+            
+            return Response.temporaryRedirect(java.net.URI.create(redirectUrl)).build();
+        } catch (Exception e) {
+            logger.error("Failed to generate SAML login request", e);
+            return Response.serverError().entity("Error generating SAML login request").build();
+        }
     }
     
-    
-  //SAML logout controller
-    
+    // SAML logout controller
     @GET
     @Path("/requestlogout")
     public Response logout(@QueryParam("nameId") String nameId,
-    		@QueryParam("sessionIndex") String sessionIndex,
-            @Context HttpServletRequest request) {		//inject HttpServletRequest in jersey
+            @QueryParam("sessionIndex") String sessionIndex,
+            @Context HttpServletRequest request) {
     	
-    	logger.debug("nameId: {} | sessionIndex: {}", nameId, sessionIndex);
-    	
-    	 // Build AuthnRequest XML
-        String samlXml = SamlAuthnRequestBuilder.build2(request); // returns logout XML as string
+        logger.info("Initiating SAML Single Logout (SLO) request: nameId={}, sessionIndex={}", nameId, sessionIndex);
+        try {
+            // Build LogoutRequest XML from session
+            String samlXml = SamlAuthnRequestBuilder.build2(request);
+            logger.debug("Constructed LogoutRequest XML: length={} characters", samlXml != null ? samlXml.length() : 0);
 
-        // Convert XML to Base64
-        String base64Request = SamlBase64Util.encodeXmlToBase64(samlXml);//base 64 xml
+            // Convert XML to Base64
+            String base64Request = SamlBase64Util.encodeXmlToBase64(samlXml);
 
-        // URL encode Base64 i.e required for redirect call
-        String encodedRequest = URLEncoder.encode(
-                base64Request,
-                StandardCharsets.UTF_8
-        );
-        logger.debug("encodedRequest {}",encodedRequest);
+            // URL encode Base64 required for redirect call
+            String encodedRequest = URLEncoder.encode(base64Request, StandardCharsets.UTF_8);
 
-        // Build redirect URL for login 
-        String redirectUrl = LOGOUT_IDP_ENDPOINT
-                + "?SAMLRequest=" + encodedRequest ;         
-     //;
+//            String targetLogoutUrl = (LOGOUT_IDP_ENDPOINT != null && !LOGOUT_IDP_ENDPOINT.isBlank()) 
+//                    ? LOGOUT_IDP_ENDPOINT 
+//                    : "https://janparichaystag.meripehchaan.gov.in/v1/SAMLLogout";
 
-        logger.debug("redirectUrl {}",redirectUrl);
-        // Send redirect
-        return  Response.temporaryRedirect(java.net.URI.create(redirectUrl)).build();
-        	
-    		
-       
+            String targetLogoutUrl = (LOGOUT_IDP_ENDPOINT != null && !LOGOUT_IDP_ENDPOINT.isBlank()) 
+                    ? LOGOUT_IDP_ENDPOINT 
+                    : "https://parichay.staging.nic.in/v1/samlLogout";
+
+            
+            String redirectUrl = targetLogoutUrl + "?SAMLRequest=" + encodedRequest;
+            logger.info("Redirecting client to SAML IdP logout endpoint: {}", targetLogoutUrl);
+            logger.debug("Full SAML logout redirect URL: {}", redirectUrl);
+
+            return Response.temporaryRedirect(java.net.URI.create(redirectUrl)).build();
+        } catch (Exception e) {
+            logger.error("Failed to generate SAML logout request", e);
+            return Response.serverError().entity("Error generating SAML logout request").build();
+        }
     }
-    
-    
 }
 
 

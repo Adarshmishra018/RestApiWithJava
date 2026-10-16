@@ -1,7 +1,9 @@
 package in.nic.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class TokenResponse {			////Response of request Token API
 
     @JsonProperty("access_token")	

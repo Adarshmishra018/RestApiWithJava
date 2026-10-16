@@ -12,20 +12,29 @@ import com.mongodb.client.MongoDatabase;
 public class MongoDbUtil {
 
 	private static final Logger logger = LogManager.getLogger(MongoDbUtil.class);
-	private static MongoClient mongoClient=MongoClients.create("mongodb://localhost:27017");//Connects to the MDB server
+	private static MongoClient mongoClient;
 	
-	public static MongoCollection<Document>	getUserCollection(){  //returns collection of document type
-		MongoDatabase database = mongoClient.getDatabase("testdb");//Connects to the database 
-		 logger.info("Connected to Server & Database");
-		return database.getCollection("user"); //returns the collection named user
-		
+	static {
+		try {
+			logger.info("Initializing MongoDB client connection to mongodb://localhost:27017");
+			mongoClient = MongoClients.create("mongodb://localhost:27017");
+			logger.info("Successfully initialized MongoDB client instance");
+		} catch (Exception e) {
+			logger.error("Failed to initialize MongoDB client", e);
+		}
+	}
+	
+	public static MongoCollection<Document> getUserCollection() {
+		logger.debug("Accessing MongoDB database 'testdb' and collection 'user'");
+		MongoDatabase database = mongoClient.getDatabase("testdb");
+		return database.getCollection("user");
 	}
 	
 	public static void close() {
-        if (mongoClient != null) {
-            mongoClient.close();
-            logger.info("MongoDB connection closed");
-        }
-    }
-	
+		if (mongoClient != null) {
+			logger.info("Closing MongoDB client connection pool");
+			mongoClient.close();
+			logger.info("MongoDB client connection pool closed successfully");
+		}
+	}
 }

@@ -1,7 +1,9 @@
 package in.nic.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class RevokeTokenResponse {				//Response of Revoke Token API
 	@JsonProperty("Status")							//maps "Status" in JSON to status in Java
     private String status;

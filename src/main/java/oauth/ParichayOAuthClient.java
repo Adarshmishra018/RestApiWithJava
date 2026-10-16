@@ -26,136 +26,138 @@ public class ParichayOAuthClient {			//Hit for Request Token URL
 
     
     
-    //ACCESS TOKEN REQUEST BODY & URL HIT
-    public static TokenResponse getToken(String authorizationCode,String codeVerifier) {		//performs Authorization Code to Access Token exchange.
-            
+    // ACCESS TOKEN REQUEST BODY & URL HIT
+    public static TokenResponse getToken(String authorizationCode, String codeVerifier) {
+        ResourceBundle config = ResourceBundle.getBundle("config");
+        String tokenUrl = config.getString("TOKEN_URL");
+        String clientId = config.getString("CLIENT_ID");
 
-    	logger.info(" Token request started: AuthCode:{} | CodeVerifier:{}",authorizationCode, codeVerifier);
-    	
-    	ResourceBundle config = ResourceBundle.getBundle("config");
-    		
-    	//building request object for token exchange
-    	TokenRequest tokenRequest = new TokenRequest();     //object created and set values
+        logger.info("Sending Authorization Code exchange request to OAuth Token URL: {}", tokenUrl);
+        logger.debug("OAuth Token request parameters: client_id={}, grant_type=authorization_code, redirect_uri={}",
+                clientId, config.getString("REDIRECT_URI"));
+
+        TokenRequest tokenRequest = new TokenRequest();
         tokenRequest.setGrantType("authorization_code");
-        tokenRequest.setClientId(config.getString("CLIENT_ID"));
+        tokenRequest.setClientId(clientId);
         tokenRequest.setClientSecret(config.getString("CLIENT_SECRET"));
         tokenRequest.setRedirectUri(config.getString("REDIRECT_URI"));
         tokenRequest.setCode(authorizationCode);
         tokenRequest.setCodeVerifier(codeVerifier);
-        
-        logger.debug("Request body: {}",tokenRequest);
-        logger.debug("Entity:{} ",Entity.entity(tokenRequest, MediaType.APPLICATION_JSON));
-        
-        //calls request token Api and send response to Callback controller
-        Response response = client
-                .target(config.getString("TOKEN_URL"))
-                .request(MediaType.APPLICATION_JSON)   // expect JSON back
-                .post(Entity.entity(tokenRequest, MediaType.APPLICATION_JSON)); //Sends tokenRequest as JSON  
-        //Takes the Java object tokenRequest, convert it to JSON, and send it as the request body
 
-        logger.debug("Token response status={}",response);
-        
-        if (response.getStatus() != 200) {					//Handle failure response
+        Response response = client
+                .target(tokenUrl)
+                .request(MediaType.APPLICATION_JSON)
+                .post(Entity.entity(tokenRequest, MediaType.APPLICATION_JSON));
+
+        int statusCode = response.getStatus();
+        logger.info("OAuth Token endpoint responded with HTTP status: {}", statusCode);
+
+        if (statusCode != 200) {
             String error = response.readEntity(String.class);
-            logger.error("Token request failed: {}", error);
-            throw new RuntimeException("Token request failed");
+            logger.error("OAuth Token request failed with status {}: responseBody={}", statusCode, error);
+            throw new RuntimeException("Token request failed with status " + statusCode);
         }
 
-        logger.info("Token issued successfully{} ");//,response.readEntity(TokenResponse.class));
-        
-        return response.readEntity(TokenResponse.class);			//read token response
-        //Read the HTTP response body, convert the JSON into a TokenResponse Java object, and return it.
+        TokenResponse tokenResponse = response.readEntity(TokenResponse.class);
+        logger.info("OAuth tokens issued successfully: token_type={}, expires_in={}",
+                tokenResponse.getTokenType(), tokenResponse.getExpiresIn());
+
+        return tokenResponse;
     }
-    
-    
-  //USER DETAILS URL HIT
+
+    // USER DETAILS URL HIT
     public static UserDetails getUserDetails(String accessToken) {
+        ResourceBundle config = ResourceBundle.getBundle("config");
+        String userDetailsUrl = config.getString("USER_DETAILS_URL");
 
-    	ResourceBundle config = ResourceBundle.getBundle("config");
-      //  Client client = ClientBuilder.newClient();			//reusable HTTP client for every request
+        logger.info("Requesting user profile from OAuth UserDetails endpoint: {}", userDetailsUrl);
+
         Response response = client
-                .target(config.getString("USER_DETAILS_URL"))
-                .request(MediaType.APPLICATION_JSON)			// expect JSON back
-                .header(HttpHeaders.AUTHORIZATION, accessToken) // Set access_token in header 
-                .get();											//Http Get request
+                .target(userDetailsUrl)
+                .request(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, accessToken)
+                .get();
 
-        logger.debug("acess token {} ", accessToken);
-        if (response.getStatus() != 200) {						
-            String error = response.readEntity(String.class);//read the response body and convert it into String.
-            logger.error("User details fetch failed: {}", error);
-            throw new RuntimeException("Failed to fetch user details");//throws Exception to the calling class
+        int statusCode = response.getStatus();
+        logger.info("OAuth UserDetails endpoint responded with HTTP status: {}", statusCode);
+
+        if (statusCode != 200) {
+            String error = response.readEntity(String.class);
+            logger.error("Failed to fetch user details from provider. HTTP status={}: responseBody={}", statusCode, error);
+            throw new RuntimeException("Failed to fetch user details: HTTP " + statusCode);
         }
-        
-        UserDetails user=response.readEntity(UserDetails.class);//read the response body & convert it into UserDetails
-        logger.debug("User details {} ", user);
 
-        return  user;
+        UserDetails user = response.readEntity(UserDetails.class);
+        logger.info("Successfully fetched user profile: userId={}, name={} {}", 
+                user.getUserId(), user.getFirstName(), user.getLastName());
+
+        return user;
     }
-      
-    
-   
-    //REFRESH TOKEN URL HIT
+
+    // REFRESH TOKEN URL HIT
     public static RefreshTokenResponse refreshAccessToken(String refreshToken) {
+        RefreshTokenResponse rfr = null;
+        ResourceBundle config = ResourceBundle.getBundle("config");
+        String refreshUrl = config.getString("REFRESH_URL");
 
-		  RefreshTokenResponse rfr = null;
-		  ResourceBundle config = ResourceBundle.getBundle("config");	//
-	        
-	      String requestBody = "{\"grant_type\":\"refresh_token\"}";		//JSON request body to send for refresh token
+        logger.info("Calling OAuth Refresh Token API at: {}", refreshUrl);
 
-	        logger.info("Calling Refresh Token API, refrest_token:{}",refreshToken);
+        String requestBody = "{\"grant_type\":\"refresh_token\"}";
 
-	        try {
-	        	//calls request refresh token Api and send response to Auth controller
-				Response response = client.target(config.getString("REFRESH_URL"))
-											.request(MediaType.APPLICATION_JSON)// expect back JSON
-											.header(HttpHeaders.AUTHORIZATION, refreshToken) // Set refresh_token in header  
-																								
-											.post(Entity.json(requestBody)); // POST type method with request body
+        try {
+            Response response = client.target(refreshUrl)
+                    .request(MediaType.APPLICATION_JSON)
+                    .header(HttpHeaders.AUTHORIZATION, refreshToken)
+                    .post(Entity.json(requestBody));
 
-				logger.debug("Refresh token response status: {}", response.getStatus());
+            int statusCode = response.getStatus();
+            logger.info("OAuth Refresh Token API responded with HTTP status: {}", statusCode);
 
-				//check if response is unsuccessful
-			if (response.getStatus() != 200) {				//get the status code
-	            String error = response.readEntity(String.class);		//Read response and convert in string
-	            logger.error("Refresh token failed: {}", error);
-	            throw new RuntimeException("Refresh token failed");
-	        }
+            if (statusCode != 200) {
+                String error = response.readEntity(String.class);
+                logger.error("OAuth token refresh failed with HTTP {}: responseBody={}", statusCode, error);
+                throw new RuntimeException("Refresh token failed with status " + statusCode);
+            }
 
-				// Reads response body & Converts it to a RefreshTokenResponse Java object.
-				rfr = response.readEntity(RefreshTokenResponse.class);// to map the response into RefreshTokenResponse 
-	        } catch(Exception e) {
-	        	logger.debug("Refresh token error: {}", e);
-	        }
-	        
-	        
-	        logger.debug("Refresh token response status: {}", rfr);
+            rfr = response.readEntity(RefreshTokenResponse.class);
+            logger.info("OAuth token successfully refreshed by authorization server");
 
-	        return rfr;
-	    }
-    
-    
-    //REVOKE TOKEN URL HIT
-  public static RevokeTokenResponse revokeAccessToken(String accessToken) {
-    	
+        } catch (Exception e) {
+            logger.error("Exception occurred while communicating with OAuth Refresh Token endpoint", e);
+            throw e;
+        }
+
+        return rfr;
+    }
+
+    // REVOKE TOKEN URL HIT
+    public static RevokeTokenResponse revokeAccessToken(String accessToken) {
         RevokeTokenResponse rfr = null;
         ResourceBundle config = ResourceBundle.getBundle("config");
-        try {
-        	logger.info("Calling Revoke Token API");
-        	
-        	//calls request revoke token Api and send response to Auth controller
-			Response response = client.target(config.getString("REVOKE_URL"))
-					.request(MediaType.APPLICATION_JSON)// expect back JSON
-					.header(HttpHeaders.AUTHORIZATION, accessToken)// Set access_token in header
-					.get();											 // Get Method
+        String revokeUrl = config.getString("REVOKE_URL");
 
-			logger.debug("Revoke token response status: {}", response.getStatus());
-			rfr = response.readEntity(RevokeTokenResponse.class);		//to read and convert the response into RefreshTokenResponse
-        } catch(Exception e) {
-        	logger.debug("Revoke token error: {}", e);
+        logger.info("Calling OAuth Revoke Token API at: {}", revokeUrl);
+
+        try {
+            Response response = client.target(revokeUrl)
+                    .request(MediaType.APPLICATION_JSON)
+                    .header(HttpHeaders.AUTHORIZATION, accessToken)
+                    .get();
+
+            int statusCode = response.getStatus();
+            logger.info("OAuth Revoke Token API responded with HTTP status: {}", statusCode);
+
+            if (statusCode == 200) {
+                rfr = response.readEntity(RevokeTokenResponse.class);
+                logger.info("OAuth token revocation successful: status={}", rfr != null ? rfr.getStatus() : "OK");
+            } else {
+                logger.warn("OAuth token revocation responded with non-200 status: {}", statusCode);
+            }
+
+        } catch (Exception e) {
+            logger.error("Exception occurred while communicating with OAuth Revoke Token endpoint", e);
+            throw e;
         }
-        
-        
-        logger.debug("Revoke token response status: {}", rfr);
 
         return rfr;
     } 

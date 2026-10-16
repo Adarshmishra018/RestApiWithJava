@@ -20,8 +20,8 @@ import validation.ValidationRegex;
 @Path("/register")
 public class RegistrationController {
 
-	UserService userservice=new UserService() ;
-	boolean exists=false;
+	UserService userservice = new UserService();
+	boolean exists = false;
 	private static final Logger logger = LogManager.getLogger(RegistrationController.class);
 	
 	@POST								//handles HTTP POST requests,Client must send a POST request
@@ -29,8 +29,8 @@ public class RegistrationController {
 	@Consumes(MediaType.APPLICATION_JSON)				//method expects data in JSON 
 	@Produces(MediaType.APPLICATION_JSON)				// will send back JSON in the response
 	public String registerNewUser(UserModel userModel) {
-		logger.info("registerNewuser called");//reads the form data from userModel
-		logger.debug("userModel : " + userModel);
+		String email = (userModel != null) ? userModel.getEmail() : "null";
+		logger.info("registerNewUser called for email: {}", email);
 		JSONObject response = new JSONObject();			//JSON Object 
 		JSONObject data = new JSONObject();				//inner JSON object (nested inside response)
 
@@ -39,18 +39,20 @@ public class RegistrationController {
 					userModel.getMobile(), userModel.getPassword()
 			);
 
-			if (error != null) {//check validation 
-				logger.error("Error in filling details");
+			//check validation 
+			if (error != null) {
+				logger.warn("Validation failed for email {}: {}", email, error);
 				response.put("status", "error");
 				response.put("statusCode", 400);
-				response.put("msg", "Enter valid Details");
+				response.put("msg", error);
 				response.put("data", new JSONObject());
 				return response.toString();
 			}
 
-			exists = userservice.registerUser(userModel);//Check if user already exists0
-			if (exists) { // found
-				logger.error("User Already exists");
+			//Check if user already exists
+			exists = userservice.registerUser(userModel);
+			if (exists) { //if found
+				logger.warn("User already exists in DB with email: {}", email);
 				response.put("status", "error");
 				response.put("statusCode", 400);
 				response.put("msg", "User Already exists");
@@ -58,12 +60,7 @@ public class RegistrationController {
 				return response.toString();
 			}
 
-			logger.info("User validation sucessful");
-			// saving 1 data inside DB.
-			logger.info("User Registered successfully");
-			logger.debug("response : " + response);
-
-			logger.info("Registration called");
+			logger.info("User registered successfully in database: email={}", email);
 			response.put("status", "success"); // putting values in JSON Object
 			response.put("statusCode", 200);
 			response.put("data", data);
@@ -71,11 +68,10 @@ public class RegistrationController {
 
 			return response.toString();
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Exception during user registration for email: {}", email, e);
 			response.put("status", "error");
 			response.put("statusCode", 500);
 			response.put("msg", "Internal server error");
-			logger.error("Error while registering:" + response);
 			return response.toString();
 		}
 	}

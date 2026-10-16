@@ -27,33 +27,40 @@ public class CallBack extends HttpServlet {
 	
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
+		logger.info("Received OAuth callback at /callback");
 		try {
-		//get code & state from URL query parameters
-		String code = request.getParameter("code");
-		String state = request.getParameter("state");
+			// get code & state from URL query parameters
+			String code = request.getParameter("code");
+			String state = request.getParameter("state");
+			logger.info("OAuth callback parameters received: code present={}, state={}", (code != null), state);
 
-		//get codeVerifier from session
-		String codeVerifier = (String) request.getSession().getAttribute("code_verifier");
-		logger.debug(" code:"+code+"\nstate:"+state);
-		
-        // Calls request token API & set response in session
-        TokenResponse token = ParichayOAuthClient.getToken(code, codeVerifier);
-        logger.debug("Token Fetched: {}",token);
-        
-        //Set access token & refresh token in session
-        request.getSession(false).setAttribute("access_token", token.getAccessToken());
-        request.getSession(false).setAttribute("refresh_token", token.getRefreshToken());
-        
-        // Calls user details API & set response in session
-        UserDetails user = ParichayOAuthClient.getUserDetails(token.getAccessToken());
-        // Store user details in session
-        request.getSession(false).setAttribute("user_details", user);
-        logger.debug("user details123 {}: ",user);
+			// get codeVerifier from session
+			String codeVerifier = (String) request.getSession().getAttribute("code_verifier");
+			logger.debug("Retrieved code_verifier from session");
+			
+			// Calls request token API & set response in session
+			logger.info("Requesting OAuth tokens from provider using authorization code and code_verifier");
+			TokenResponse token = ParichayOAuthClient.getToken(code, codeVerifier);
+			logger.info("OAuth token exchange completed");
+			
+			// Set access token & refresh token in session
+			request.getSession(false).setAttribute("access_token", token.getAccessToken());
+			request.getSession(false).setAttribute("refresh_token", token.getRefreshToken());
+			logger.info("Access token and refresh token saved in session");
+			
+			// Calls user details API & set response in session
+			logger.info("Fetching user details from OAuth provider");
+			UserDetails user = ParichayOAuthClient.getUserDetails(token.getAccessToken());
+			
+			// Store user details in session
+			request.getSession(false).setAttribute("user_details", user);
+			logger.info("User details saved in session: userId={}", user != null ? user.getUserId() : "null");
 
-        response.sendRedirect(request.getContextPath() + "/profile.jsp");
-       // response.sendRedirect("http://oauthclient.staging.nic.in/profile.jsp");
-		}catch(Exception e) {
-			 logger.debug("Exception occurred {}: ",e);
+			logger.info("Redirecting user to profile.jsp");
+			response.sendRedirect(request.getContextPath() + "/profile.jsp");
+			// response.sendRedirect("http://oauthclient.staging.nic.in/profile.jsp");
+		} catch(Exception e) {
+			logger.error("Exception occurred during OAuth callback processing", e);
 		}
 	}
 

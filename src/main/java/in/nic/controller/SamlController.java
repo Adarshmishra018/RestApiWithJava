@@ -24,13 +24,7 @@ import util.SamlBase64Util;
 public class SamlController {
 
 	private static final Logger logger = LogManager.getLogger(SamlController.class);
-//	
-//    private static final String IDP_LOGIN_URL =
-//    		"https://janparichaystag.meripehchaan.gov.in/v1/SAMLLogin";
-//    
-//    private static final String LOGOUT_IDP_ENDPOINT =
-//    		"https://janparichaystag.meripehchaan.gov.in/v1/SAMLLogout";
-//   
+
 	private static final Properties prop = new Properties();
 
 	static {

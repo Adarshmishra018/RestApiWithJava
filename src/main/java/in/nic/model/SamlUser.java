@@ -69,43 +69,4 @@ public class SamlUser {
 }
 
 
-//
-//public class SamlUser implements Serializable {
-//
-//    private String nameId;
-//    private String email;
-//    private String uid;
-//    private Map<String, String> attributes;
-//
-//    public String getNameId() {
-//        return nameId;
-//    }
-//
-//    public void setNameId(String nameId) {
-//        this.nameId = nameId;
-//    }
-//
-//    public String getEmail() {
-//        return email;
-//    }
-//
-//    public void setEmail(String email) {
-//        this.email = email;
-//    }
-//
-//    public String getUid() {
-//        return uid;
-//    }
-//
-//    public void setUid(String uid) {
-//        this.uid = uid;
-//    }
-//
-//    public Map<String, String> getAttributes() {
-//        return attributes;
-//    }
-//
-//    public void setAttributes(Map<String, String> attributes) {
-//        this.attributes = attributes;
-//    }
-//}
+

@@ -15,7 +15,7 @@
 
   <Loggers>			<!--  to link with appender -->
  
-    <Root level="trace">		<!-- scan logger object class -->
+    <Root level="DEBUG">		<!-- scan logger object class -->
       <AppenderRef ref="LoggingToConsole"/>
     </Root>
   </Loggers>

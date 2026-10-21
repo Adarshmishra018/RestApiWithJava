@@ -1,5 +1,5 @@
 @charset "UTF-8";
- /* body {
+  body {
             margin: 0;
             height: 100vh;
             font-family: Arial, Helvetica, sans-serif;
@@ -39,6 +39,44 @@
             transition: 0.3s;
         }
 
+
+
+/* SAML Login Button */
+#samlLoginBtn {
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin: 10px;
+    transition: background-color 0.3s ease;
+}
+
+#samlLoginBtn:hover {
+    background-color: #1d4ed8;
+}
+
+/* OAuth Login Button */
+#parichayLoginBtn {
+    background-color: #16a34a;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin: 10px;
+    transition: background-color 0.3s ease;
+}
+
+#parichayLoginBtn:hover {
+    background-color: #15803d;
+}
+
         .login-btn {
             background-color: #007bff;
             color: #fff;
@@ -55,7 +93,7 @@
 
         .register-btn:hover {
             background-color: #1e7e34;
-        } */
+        } 
 
 
 
@@ -65,6 +103,9 @@
 
 
 
+
+
+/* 
         @charset "UTF-8";
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
@@ -122,7 +163,7 @@ body {
     padding: 24px;
 }
 
-/* Card Container */
+Card Container
 .container, .card, .profile-card, .box {
     background: var(--surface);
     backdrop-filter: blur(16px);
@@ -146,7 +187,7 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Header & Typography */
+Header & Typography
 .brand-badge {
     display: inline-flex;
     align-items: center;
@@ -183,7 +224,7 @@ p.subtitle, p.desc {
     line-height: 1.5;
 }
 
-/* Form Controls */
+Form Controls
 .form-group, .mb-3 {
     margin-bottom: 18px;
     text-align: left;
@@ -219,7 +260,7 @@ input:focus, .form-control:focus {
     box-shadow: 0 0 0 4px var(--primary-glow);
 }
 
-/* Buttons */
+Buttons
 button, .btn {
     width: 100%;
     padding: 12px 18px;
@@ -250,7 +291,7 @@ button:active, .btn:active {
     transform: translateY(0);
 }
 
-/* Specific Button Variants */
+Specific Button Variants
 .oauth-btn, #parichayLoginBtn {
     background: var(--oauth-btn) !important;
     box-shadow: 0 8px 16px -4px var(--oauth-glow) !important;
@@ -285,7 +326,7 @@ button:active, .btn:active {
     background: var(--danger-hover) !important;
 }
 
-/* Divider */
+Divider
 .divider {
     display: flex;
     align-items: center;
@@ -305,7 +346,7 @@ button:active, .btn:active {
     padding: 0 12px;
 }
 
-/* Links */
+Links
 .links {
     margin-top: 22px;
     text-align: center;
@@ -329,7 +370,7 @@ button:active, .btn:active {
     color: var(--primary-hover);
 }
 
-/* Alerts */
+Alerts
 .alert {
     padding: 12px 16px;
     border-radius: var(--radius-sm);
@@ -352,7 +393,7 @@ button:active, .btn:active {
     display: none !important;
 }
 
-/* Profile Specific Layout */
+Profile Specific Layout
 .profile-header {
     text-align: center;
     margin-bottom: 24px;
@@ -405,3 +446,4 @@ button:active, .btn:active {
     flex-direction: column;
     gap: 10px;
 }
+ */

@@ -3,7 +3,7 @@ package oauth;
 
 
 import in.nic.config.ParichayConfig;
-import in.nic.controller.profileController;
+//import in.nic.controller.profileController;
 import in.nic.model.UserDetails;
 
 import javax.ws.rs.client.Client;
@@ -19,7 +19,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 public class UserDetailsClient {  //request for user details
 
-	private static final Logger logger = LogManager.getLogger(profileController.class);
+	//private static final Logger logger = LogManager.getLogger(profileController.class);
 	
     public static UserDetailsClient getUserDetails(String accessToken) {
 

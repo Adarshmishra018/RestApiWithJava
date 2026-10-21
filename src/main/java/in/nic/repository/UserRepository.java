@@ -11,7 +11,6 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
 import com.mongodb.client.result.UpdateResult;
 
-import in.nic.controller.LoginController;
 import in.nic.model.UserModel;
 import util.MongoDbUtil;
 import util.ObjectIdUtil;

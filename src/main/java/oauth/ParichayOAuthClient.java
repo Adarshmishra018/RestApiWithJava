@@ -64,35 +64,70 @@ public class ParichayOAuthClient {			//Hit for Request Token URL
 
         return tokenResponse;
     }
-
+//commented by full json data in oauth
     // USER DETAILS URL HIT
     public static UserDetails getUserDetails(String accessToken) {
-        ResourceBundle config = ResourceBundle.getBundle("config");
-        String userDetailsUrl = config.getString("USER_DETAILS_URL");
+         ResourceBundle config = ResourceBundle.getBundle("config");
+         String userDetailsUrl = config.getString("USER_DETAILS_URL");
 
-        logger.info("Requesting user profile from OAuth UserDetails endpoint: {}", userDetailsUrl);
+         logger.info("Requesting user profile from OAuth UserDetails endpoint: {}", userDetailsUrl);
 
-        Response response = client
-                .target(userDetailsUrl)
-                .request(MediaType.APPLICATION_JSON)
-                .header(HttpHeaders.AUTHORIZATION, accessToken)
-                .get();
+         Response response = client
+                 .target(userDetailsUrl)
+                 .request(MediaType.APPLICATION_JSON)
+                 .header(HttpHeaders.AUTHORIZATION, accessToken)
+                 .get();
 
-        int statusCode = response.getStatus();
-        logger.info("OAuth UserDetails endpoint responded with HTTP status: {}", statusCode);
+         int statusCode = response.getStatus();
+         logger.info("OAuth UserDetails endpoint responded with HTTP status: {}", statusCode);
 
-        if (statusCode != 200) {
-            String error = response.readEntity(String.class);
-            logger.error("Failed to fetch user details from provider. HTTP status={}: responseBody={}", statusCode, error);
-            throw new RuntimeException("Failed to fetch user details: HTTP " + statusCode);
-        }
+         if (statusCode != 200) {
+             String error = response.readEntity(String.class);
+             logger.error("Failed to fetch user details from provider. HTTP status={}: responseBody={}", statusCode, error);
+             throw new RuntimeException("Failed to fetch user details: HTTP " + statusCode);
+         }
 
-        UserDetails user = response.readEntity(UserDetails.class);
-        logger.info("Successfully fetched user profile: userId={}, name={} {}", 
-                user.getUserId(), user.getFirstName(), user.getLastName());
+         UserDetails user = response.readEntity(UserDetails.class);
+         logger.info("Successfully fetched user profile: userId={}, name={} {}", 
+                 user.getUserId(), user.getFirstName(), user.getLastName());
 
-        return user;
-    }
+         return user;
+     }
+
+//=====================================
+//    // USER DETAILS URL HIT — CAPTURES FULL RAW JSON
+//public static String[] getUserDetailsWithRawJson(String accessToken) {
+//    ResourceBundle config = ResourceBundle.getBundle("config");
+//    String userDetailsUrl = config.getString("USER_DETAILS_URL");
+//
+//    logger.info("Requesting user profile from OAuth UserDetails endpoint: {}", userDetailsUrl);
+//
+//    Response response = client
+//            .target(userDetailsUrl)
+//            .request(MediaType.APPLICATION_JSON)
+//            .header(HttpHeaders.AUTHORIZATION, accessToken)
+//            .get();
+//
+//    int statusCode = response.getStatus();
+//    logger.info("OAuth UserDetails endpoint responded with HTTP status: {}", statusCode);
+//
+//    if (statusCode != 200) {
+//        String error = response.readEntity(String.class);
+//        logger.error("Failed to fetch user details. HTTP status={}: responseBody={}", statusCode, error);
+//        throw new RuntimeException("Failed to fetch user details: HTTP " + statusCode);
+//    }
+//
+//    // Read the RAW JSON string first (this is the COMPLETE response from Parichay)
+//    String rawJson = response.readEntity(String.class);
+//    logger.info("Complete raw JSON from Parichay UserDetails API: {}", rawJson);
+//
+//    return new String[] { rawJson };
+//}
+
+//================================
+
+
+
 
     // REFRESH TOKEN URL HIT
     public static RefreshTokenResponse refreshAccessToken(String refreshToken) {

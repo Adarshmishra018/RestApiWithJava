@@ -19,6 +19,7 @@ public class SamlAttributeMapper {
         logger.debug("Starting mapping of SAML assertion attribute statements");
 
         for (AttributeStatement stmt : assertion.getAttributeStatements()) {
+        	logger.info("stmt={}", stmt);
             for (Attribute attr : stmt.getAttributes()) {
                 String attrName = attr.getName();
                 String attrValue = null;
@@ -34,7 +35,7 @@ public class SamlAttributeMapper {
                     continue;
                 }
 
-                logger.debug("Mapping SAML attribute: key={}", attrName);
+                logger.info("Mapping SAML attribute: key={}", attrName);
 
                 switch (attrName) {
                     case "parichayId":

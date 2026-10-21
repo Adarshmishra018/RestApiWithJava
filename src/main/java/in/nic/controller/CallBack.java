@@ -12,6 +12,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import in.nic.model.UserDetails;
 
 
@@ -52,6 +55,24 @@ public class CallBack extends HttpServlet {
 			logger.info("Fetching user details from OAuth provider");
 			UserDetails user = ParichayOAuthClient.getUserDetails(token.getAccessToken());
 			
+			
+//	//========================================		
+//			
+//			// new change forGet the COMPLETE raw JSON from Parichay
+//				String[] result = ParichayOAuthClient.getUserDetailsWithRawJson(token.getAccessToken());
+//				String rawJson = result[0];
+//
+//				// Parse into your model for individual fields
+//				ObjectMapper mapper = new ObjectMapper();
+//				UserDetails user = mapper.readValue(rawJson, UserDetails.class);
+//
+//				// Store BOTH in session
+//				request.getSession(false).setAttribute("user_details", user);
+//				request.getSession(false).setAttribute("raw_parichay_json", rawJson);  // <-- FULL DATA
+//
+//
+////=========================================
+
 			// Store user details in session
 			request.getSession(false).setAttribute("user_details", user);
 			logger.info("User details saved in session: userId={}", user != null ? user.getUserId() : "null");

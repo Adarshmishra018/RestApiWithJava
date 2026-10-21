@@ -7,8 +7,6 @@ import javax.ws.rs.core.Context;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import in.nic.controller.LoginController;
 import redis.clients.jedis.Jedis;
 import util.RedisUtil;
 
